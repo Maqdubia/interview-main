@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/lib/db";
 import { ArrowRight, FileText, Mic, TrendingUp } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
@@ -20,8 +20,8 @@ const Dashboard = () => {
     if (!user) return;
     (async () => {
       const [iv, rs] = await Promise.all([
-        supabase.from("interviews").select("id, role, overall_score, created_at").order("created_at", { ascending: false }).limit(20),
-        supabase.from("resumes").select("id, filename, ats_score, target_role, created_at").order("created_at", { ascending: false }).limit(10),
+        db.from("interviews").select("id, role, overall_score, created_at").order("created_at", { ascending: false }).limit(20),
+        db.from("resumes").select("id, filename, ats_score, target_role, created_at").order("created_at", { ascending: false }).limit(10),
       ]);
       setInterviews((iv.data as any) || []);
       setResumes((rs.data as any) || []);
