@@ -14,7 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      answers: {
+        Row: {
+          clarity_score: number | null
+          confidence_score: number | null
+          content_score: number | null
+          created_at: string
+          feedback: string | null
+          id: string
+          interview_id: string
+          question: string
+          question_index: number
+          transcript: string | null
+          user_id: string
+        }
+        Insert: {
+          clarity_score?: number | null
+          confidence_score?: number | null
+          content_score?: number | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          interview_id: string
+          question: string
+          question_index: number
+          transcript?: string | null
+          user_id: string
+        }
+        Update: {
+          clarity_score?: number | null
+          confidence_score?: number | null
+          content_score?: number | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          interview_id?: string
+          question?: string
+          question_index?: number
+          transcript?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_interview_id_fkey"
+            columns: ["interview_id"]
+            isOneToOne: false
+            referencedRelation: "interviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      interviews: {
+        Row: {
+          clarity_score: number | null
+          confidence_score: number | null
+          content_score: number | null
+          created_at: string
+          difficulty: string
+          id: string
+          overall_score: number | null
+          role: string
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          clarity_score?: number | null
+          confidence_score?: number | null
+          content_score?: number | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          overall_score?: number | null
+          role: string
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          clarity_score?: number | null
+          confidence_score?: number | null
+          content_score?: number | null
+          created_at?: string
+          difficulty?: string
+          id?: string
+          overall_score?: number | null
+          role?: string
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resumes: {
+        Row: {
+          ats_score: number | null
+          created_at: string
+          detected_skills: string[] | null
+          file_name: string | null
+          id: string
+          matched_keywords: string[] | null
+          missing_keywords: string[] | null
+          raw_text: string | null
+          suggestions: string | null
+          user_id: string
+        }
+        Insert: {
+          ats_score?: number | null
+          created_at?: string
+          detected_skills?: string[] | null
+          file_name?: string | null
+          id?: string
+          matched_keywords?: string[] | null
+          missing_keywords?: string[] | null
+          raw_text?: string | null
+          suggestions?: string | null
+          user_id: string
+        }
+        Update: {
+          ats_score?: number | null
+          created_at?: string
+          detected_skills?: string[] | null
+          file_name?: string | null
+          id?: string
+          matched_keywords?: string[] | null
+          missing_keywords?: string[] | null
+          raw_text?: string | null
+          suggestions?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
