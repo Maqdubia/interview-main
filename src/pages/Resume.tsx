@@ -51,16 +51,18 @@ const Resume = () => {
       const r = data as Report;
       setReport(r);
 
-      await db.from("resumes").insert({
+      const { error: saveError } = await db.from("resumes").insert({
         user_id: user.id,
-        filename: file.name,
+        file_name: file.name,
         raw_text: text.slice(0, 50000),
-        target_role: role,
         ats_score: r.ats_score,
         matched_keywords: r.matched_keywords,
         missing_keywords: r.missing_keywords,
-        suggestions: r.suggestions,
+        detected_skills: r.detected_skills,
+        suggestions: r.suggestions.join("\n"),
       });
+
+      if (saveError) throw saveError;
 
       toast.success("Resume analyzed!");
     } catch (e: any) {
