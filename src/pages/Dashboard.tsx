@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/db";
 import { ArrowRight, FileText, Mic, TrendingUp } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
 
 type Interview = { id: string; role: string; overall_score: number | null; created_at: string };
-type Resume = { id: string; filename: string; ats_score: number | null; target_role: string | null; created_at: string };
+type Resume = { id: string; file_name: string | null; ats_score: number | null; created_at: string };
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -21,7 +21,7 @@ const Dashboard = () => {
     (async () => {
       const [iv, rs] = await Promise.all([
         db.from("interviews").select("id, role, overall_score, created_at").order("created_at", { ascending: false }).limit(20),
-        db.from("resumes").select("id, filename, ats_score, target_role, created_at").order("created_at", { ascending: false }).limit(10),
+        db.from("resumes").select("id, file_name, ats_score, created_at").order("created_at", { ascending: false }).limit(10),
       ]);
       setInterviews((iv.data as any) || []);
       setResumes((rs.data as any) || []);
@@ -91,21 +91,38 @@ const Dashboard = () => {
           </div>
 
           <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-soft">
-            <h2 className="mb-4 font-display text-lg font-semibold">Recent resumes</h2>
+            <h2 className="mb-4 font-display text-lg font-semibold">Resume ATS scores</h2>
             {resumes.length === 0 ? (
               <p className="text-sm text-muted-foreground">No resumes yet. Upload your first PDF to get an ATS score.</p>
             ) : (
-              <ul className="space-y-2">
-                {resumes.slice(0, 5).map((r) => (
-                  <li key={r.id} className="flex items-center justify-between rounded-lg border border-border/50 bg-background/60 p-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{r.filename}</p>
-                      <p className="truncate text-xs text-muted-foreground">{r.target_role || "No target role"}</p>
-                    </div>
-                    <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">{r.ats_score ?? "—"}</span>
-                  </li>
-                ))}
-              </ul>
+              <>
+                <div className="h-48">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[...resumes].reverse().map((r, idx) => ({ name: `R${idx + 1}`, score: r.ats_score ?? 0, file: r.file_name || "Resume" }))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <YAxis domain={[0, 100]} stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <Tooltip
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 12 }}
+                        labelStyle={{ color: "hsl(var(--foreground))" }}
+                        formatter={(value: any, _n: any, p: any) => [`${value}/100`, p?.payload?.file]}
+                      />
+                      <Bar dataKey="score" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <ul className="mt-4 space-y-2">
+                  {resumes.slice(0, 5).map((r) => (
+                    <li key={r.id} className="flex items-center justify-between rounded-lg border border-border/50 bg-background/60 p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{r.file_name || "Resume"}</p>
+                        <p className="truncate text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">{r.ats_score ?? "—"}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         </div>
