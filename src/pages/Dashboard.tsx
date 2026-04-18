@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { db } from "@/lib/db";
 import { ArrowRight, FileText, Mic, TrendingUp } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
 
 type Interview = { id: string; role: string; overall_score: number | null; created_at: string };
-type Resume = { id: string; filename: string; ats_score: number | null; target_role: string | null; created_at: string };
+type Resume = { id: string; file_name: string | null; ats_score: number | null; created_at: string };
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -21,7 +21,7 @@ const Dashboard = () => {
     (async () => {
       const [iv, rs] = await Promise.all([
         db.from("interviews").select("id, role, overall_score, created_at").order("created_at", { ascending: false }).limit(20),
-        db.from("resumes").select("id, filename, ats_score, target_role, created_at").order("created_at", { ascending: false }).limit(10),
+        db.from("resumes").select("id, file_name, ats_score, created_at").order("created_at", { ascending: false }).limit(10),
       ]);
       setInterviews((iv.data as any) || []);
       setResumes((rs.data as any) || []);
