@@ -25,6 +25,7 @@ const Resume = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [role, setRole] = useState("Software Engineer");
+  const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [working, setWorking] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
 
