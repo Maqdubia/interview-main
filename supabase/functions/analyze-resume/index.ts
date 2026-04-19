@@ -7,7 +7,7 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { resumeText, targetRole } = await req.json();
+    const { resumeText, targetRole, experienceLevel } = await req.json();
     if (!resumeText || typeof resumeText !== "string") {
       return new Response(JSON.stringify({ error: "resumeText required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -16,12 +16,22 @@ Deno.serve(async (req) => {
 
     const trimmed = resumeText.slice(0, 12000);
     const role = (targetRole || "Software Engineer").toString().slice(0, 120);
+    const level = (experienceLevel || "mid").toString().toLowerCase();
+    const levelGuidance: Record<string, string> = {
+      fresher:
+        "FRESHER / ENTRY-LEVEL (0-1 years, recent graduate or intern). Score this resume against fresher expectations: weight academic projects, internships, coursework, hackathons, certifications, and foundational skills. Do NOT penalize for missing years of industry experience, leadership, or production system ownership. Missing keywords should focus on entry-level fundamentals (data structures, basic frameworks, version control, internships, projects), NOT senior concepts (architecture, mentoring, scaling). Suggestions should be encouraging and beginner-appropriate.",
+      mid:
+        "MID-LEVEL (2-5 years). Expect production experience, ownership of features, and solid technical depth. Score against mid-level bar.",
+      senior:
+        "SENIOR (5+ years). Expect leadership, architecture, mentoring, cross-functional impact, and depth. Score against senior bar; flag missing seniority signals.",
+    };
+    const levelText = levelGuidance[level] || levelGuidance.mid;
 
     const body = {
       model: "google/gemini-3-flash-preview",
       messages: [
-        { role: "system", content: "You are an expert ATS (Applicant Tracking System) and technical recruiter. Analyze resumes for the given target role. Be honest, specific, and concise." },
-        { role: "user", content: `Target role: ${role}\n\nResume text:\n"""${trimmed}"""\n\nAnalyze how well this resume matches the role. Score it like a real ATS, list keywords found vs missing, and give 4-6 short improvement suggestions.` },
+        { role: "system", content: `You are an expert ATS (Applicant Tracking System) and technical recruiter. Analyze resumes for the given target role and experience level. Be honest, specific, and concise. ${levelText}` },
+        { role: "user", content: `Target role: ${role}\nExperience level: ${level}\n\nResume text:\n"""${trimmed}"""\n\nAnalyze how well this resume matches the role AT THE ${level.toUpperCase()} LEVEL. Score it like a real ATS calibrated for this seniority, list keywords found vs missing (calibrated to the level), and give 4-6 short improvement suggestions appropriate for a ${level} candidate.` },
       ],
       tools: [{
         type: "function",
