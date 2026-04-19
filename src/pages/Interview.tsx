@@ -20,6 +20,7 @@ const Interview = () => {
   const [stage, setStage] = useState<Stage>("setup");
   const [role, setRole] = useState("Software Engineer");
   const [difficulty, setDifficulty] = useState("medium");
+  const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [questions, setQuestions] = useState<string[]>([]);
   const [qIndex, setQIndex] = useState(0);
   const [interviewId, setInterviewId] = useState<string | null>(null);
