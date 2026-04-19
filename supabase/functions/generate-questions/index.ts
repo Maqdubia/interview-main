@@ -66,11 +66,13 @@ Deno.serve(async (req) => {
             role: "user",
             content:
               `Generate ${n} ${difficulty || "medium"}-difficulty interview questions for a ${role || "Software Engineer"} role.\n\n` +
+              `EXPERIENCE LEVEL: ${level.toUpperCase()} — ${levelText}\n\n` +
               `Variety seed (use to ensure uniqueness, do not mention): ${seed}\n` +
               `Inspiration topics (pick a diverse subset, do not list all): ${topics.join(", ")}\n` +
               `Preferred question styles to mix: ${styleHint}.\n\n` +
               `Constraints:\n` +
               `- Each question must be distinct in topic and angle.\n` +
+              `- Calibrate depth strictly to the experience level above.\n` +
               `- Avoid clichés ("greatest weakness", "where do you see yourself in 5 years").\n` +
               `- Make them realistic for a ${difficulty || "medium"} bar at a real company.\n\n` +
               `Return ONLY a JSON object: {"questions": ["...","..."]}.`,
