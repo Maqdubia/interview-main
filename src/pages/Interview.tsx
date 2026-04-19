@@ -20,6 +20,7 @@ const Interview = () => {
   const [stage, setStage] = useState<Stage>("setup");
   const [role, setRole] = useState("Software Engineer");
   const [difficulty, setDifficulty] = useState("medium");
+  const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [questions, setQuestions] = useState<string[]>([]);
   const [qIndex, setQIndex] = useState(0);
   const [interviewId, setInterviewId] = useState<string | null>(null);
@@ -43,7 +44,7 @@ const Interview = () => {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-questions", {
-        body: { role, difficulty, count: 5 },
+        body: { role, difficulty, count: 5, experienceLevel },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -111,7 +112,7 @@ const Interview = () => {
 
       toast.info("Scoring your answer…");
       const { data: sc, error: se } = await supabase.functions.invoke("score-answer", {
-        body: { question: questions[qIndex], transcript: finalTranscript, role, audioMetrics },
+        body: { question: questions[qIndex], transcript: finalTranscript, role, audioMetrics, experienceLevel },
       });
       if (se) throw se;
       if ((sc as any)?.error) throw new Error((sc as any).error);
@@ -181,6 +182,22 @@ const Interview = () => {
               <div className="space-y-2">
                 <Label htmlFor="role">Target role</Label>
                 <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Experience level</Label>
+                <div className="flex gap-2">
+                  {[
+                    { k: "fresher", l: "Fresher", sub: "0-1 yrs" },
+                    { k: "mid", l: "Mid", sub: "2-5 yrs" },
+                    { k: "senior", l: "Senior", sub: "5+ yrs" },
+                  ].map((lv) => (
+                    <button key={lv.k} type="button" onClick={() => setExperienceLevel(lv.k as any)}
+                      className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-medium transition-smooth ${experienceLevel === lv.k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-accent"}`}>
+                      <div>{lv.l}</div>
+                      <div className={`text-[11px] font-normal ${experienceLevel === lv.k ? "opacity-80" : "text-muted-foreground"}`}>{lv.sub}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Difficulty</Label>

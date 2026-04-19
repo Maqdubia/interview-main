@@ -6,7 +6,7 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    const { question, transcript, role, audioMetrics } = await req.json();
+    const { question, transcript, role, audioMetrics, experienceLevel } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -18,11 +18,19 @@ Deno.serve(async (req) => {
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const level = (experienceLevel || "mid").toString().toLowerCase();
+    const levelExpectation: Record<string, string> = {
+      fresher: "Candidate is a FRESHER (0-1 yrs / recent graduate). Score generously: reward fundamentals, learning attitude, and clear thinking. Do NOT penalize lack of production or leadership experience.",
+      mid: "Candidate is MID-LEVEL (2-5 yrs). Expect practical engineering depth and some ownership signals.",
+      senior: "Candidate is SENIOR (5+ yrs). Expect architectural depth, trade-off reasoning, and leadership signals.",
+    };
+    const expectation = levelExpectation[level] || levelExpectation.mid;
+
     const body = {
       model: "google/gemini-3-flash-preview",
       messages: [
-        { role: "system", content: "You are an expert interview coach. Evaluate candidate answers fairly on content relevance, communication clarity, and confidence. Use the audio metrics as a hint for confidence." },
-        { role: "user", content: `Role: ${role || "Software Engineer"}\nQuestion: ${question}\nCandidate transcript: """${(transcript||"").slice(0,4000)}"""\nAudio metrics: ${JSON.stringify(audioMetrics || {})}\n\nScore each 0-100. Be critical but constructive.` },
+        { role: "system", content: `You are an expert interview coach. Evaluate candidate answers fairly on content relevance, communication clarity, and confidence. Use the audio metrics as a hint for confidence. ${expectation}` },
+        { role: "user", content: `Role: ${role || "Software Engineer"}\nExperience level: ${level}\nQuestion: ${question}\nCandidate transcript: """${(transcript||"").slice(0,4000)}"""\nAudio metrics: ${JSON.stringify(audioMetrics || {})}\n\nScore each 0-100 calibrated to the candidate's experience level. Be critical but constructive.` },
       ],
       tools: [{
         type: "function",
