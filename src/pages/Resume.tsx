@@ -44,7 +44,7 @@ const Resume = () => {
 
       toast.info("Analyzing with AI…");
       const { data, error } = await supabase.functions.invoke("analyze-resume", {
-        body: { resumeText: text, targetRole: role },
+        body: { resumeText: text, targetRole: role, experienceLevel },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
