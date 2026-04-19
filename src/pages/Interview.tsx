@@ -112,7 +112,7 @@ const Interview = () => {
 
       toast.info("Scoring your answer…");
       const { data: sc, error: se } = await supabase.functions.invoke("score-answer", {
-        body: { question: questions[qIndex], transcript: finalTranscript, role, audioMetrics },
+        body: { question: questions[qIndex], transcript: finalTranscript, role, audioMetrics, experienceLevel },
       });
       if (se) throw se;
       if ((sc as any)?.error) throw new Error((sc as any).error);
