@@ -25,6 +25,7 @@ const Resume = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [role, setRole] = useState("Software Engineer");
+  const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [working, setWorking] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
 
@@ -43,7 +44,7 @@ const Resume = () => {
 
       toast.info("Analyzing with AI…");
       const { data, error } = await supabase.functions.invoke("analyze-resume", {
-        body: { resumeText: text, targetRole: role },
+        body: { resumeText: text, targetRole: role, experienceLevel },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -89,6 +90,22 @@ const Resume = () => {
               <div className="space-y-2">
                 <Label htmlFor="role">Target role</Label>
                 <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Frontend Engineer" />
+              </div>
+              <div className="space-y-2">
+                <Label>Experience level</Label>
+                <div className="flex gap-2">
+                  {[
+                    { k: "fresher", l: "Fresher", sub: "0-1 yrs" },
+                    { k: "mid", l: "Mid", sub: "2-5 yrs" },
+                    { k: "senior", l: "Senior", sub: "5+ yrs" },
+                  ].map((lv) => (
+                    <button key={lv.k} type="button" onClick={() => setExperienceLevel(lv.k as any)}
+                      className={`flex-1 rounded-xl border px-2 py-2 text-xs font-medium transition-smooth ${experienceLevel === lv.k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-accent"}`}>
+                      <div>{lv.l}</div>
+                      <div className={`text-[10px] font-normal ${experienceLevel === lv.k ? "opacity-80" : "text-muted-foreground"}`}>{lv.sub}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Resume PDF</Label>
