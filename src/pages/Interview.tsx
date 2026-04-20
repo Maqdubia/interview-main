@@ -50,7 +50,7 @@ const Interview = () => {
       if ((data as any)?.error) throw new Error((data as any).error);
       const qs: string[] = (data as any).questions || [];
       if (qs.length === 0) throw new Error("No questions generated");
-      const ins = await db.from("interviews").insert({ user_id: user.id, role, difficulty }).select("id").single();
+      const ins = await db.from("interviews").insert({ user_id: user.id, role, difficulty, experience_level: experienceLevel }).select("id").single();
       if (ins.error) throw ins.error;
       setInterviewId(ins.data.id);
       setQuestions(qs);

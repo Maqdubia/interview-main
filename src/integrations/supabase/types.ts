@@ -71,6 +71,7 @@ export type Database = {
           content_score: number | null
           created_at: string
           difficulty: string
+          experience_level: string | null
           id: string
           overall_score: number | null
           role: string
@@ -83,6 +84,7 @@ export type Database = {
           content_score?: number | null
           created_at?: string
           difficulty?: string
+          experience_level?: string | null
           id?: string
           overall_score?: number | null
           role: string
@@ -95,6 +97,7 @@ export type Database = {
           content_score?: number | null
           created_at?: string
           difficulty?: string
+          experience_level?: string | null
           id?: string
           overall_score?: number | null
           role?: string
@@ -135,6 +138,7 @@ export type Database = {
           ats_score: number | null
           created_at: string
           detected_skills: string[] | null
+          experience_level: string | null
           file_name: string | null
           id: string
           matched_keywords: string[] | null
@@ -147,6 +151,7 @@ export type Database = {
           ats_score?: number | null
           created_at?: string
           detected_skills?: string[] | null
+          experience_level?: string | null
           file_name?: string | null
           id?: string
           matched_keywords?: string[] | null
@@ -159,6 +164,7 @@ export type Database = {
           ats_score?: number | null
           created_at?: string
           detected_skills?: string[] | null
+          experience_level?: string | null
           file_name?: string | null
           id?: string
           matched_keywords?: string[] | null

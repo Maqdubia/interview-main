@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, PolarRadiusAxis } from "recharts";
 
-type Interview = { id: string; role: string; difficulty: string; overall_score: number | null; content_score: number | null; clarity_score: number | null; confidence_score: number | null; created_at: string };
+type Interview = { id: string; role: string; difficulty: string; experience_level: string | null; overall_score: number | null; content_score: number | null; clarity_score: number | null; confidence_score: number | null; created_at: string };
 type Answer = { id: string; question: string; question_index: number; transcript: string | null; content_score: number; clarity_score: number; confidence_score: number; feedback: string };
 
 const Results = () => {
@@ -52,7 +52,12 @@ const Results = () => {
         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-3xl font-bold md:text-4xl">{interview.role}</h1>
-            <p className="text-sm text-muted-foreground capitalize">{interview.difficulty} · {new Date(interview.created_at).toLocaleString()}</p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {interview.experience_level && (
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold capitalize text-primary">{interview.experience_level}</span>
+              )}
+              <p className="text-sm text-muted-foreground capitalize">{interview.difficulty} · {new Date(interview.created_at).toLocaleString()}</p>
+            </div>
           </div>
           <Button variant="hero" onClick={() => navigate("/interview")}><RotateCcw className="h-4 w-4" /> Practice again</Button>
         </div>
