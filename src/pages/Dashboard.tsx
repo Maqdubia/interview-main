@@ -7,8 +7,8 @@ import { db } from "@/lib/db";
 import { ArrowRight, FileText, Mic, TrendingUp } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
 
-type Interview = { id: string; role: string; overall_score: number | null; created_at: string };
-type Resume = { id: string; file_name: string | null; ats_score: number | null; created_at: string };
+type Interview = { id: string; role: string; overall_score: number | null; experience_level: string | null; created_at: string };
+type Resume = { id: string; file_name: string | null; ats_score: number | null; experience_level: string | null; created_at: string };
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -20,8 +20,8 @@ const Dashboard = () => {
     if (!user) return;
     (async () => {
       const [iv, rs] = await Promise.all([
-        db.from("interviews").select("id, role, overall_score, created_at").order("created_at", { ascending: false }).limit(20),
-        db.from("resumes").select("id, file_name, ats_score, created_at").order("created_at", { ascending: false }).limit(10),
+        db.from("interviews").select("id, role, overall_score, experience_level, created_at").order("created_at", { ascending: false }).limit(20),
+        db.from("resumes").select("id, file_name, ats_score, experience_level, created_at").order("created_at", { ascending: false }).limit(10),
       ]);
       setInterviews((iv.data as any) || []);
       setResumes((rs.data as any) || []);
@@ -116,7 +116,10 @@ const Dashboard = () => {
                     <li key={r.id} className="flex items-center justify-between rounded-lg border border-border/50 bg-background/60 p-3">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium">{r.file_name || "Resume"}</p>
-                        <p className="truncate text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {new Date(r.created_at).toLocaleDateString()}
+                          {r.experience_level && <span className="ml-1.5 capitalize text-primary">· {r.experience_level}</span>}
+                        </p>
                       </div>
                       <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground">{r.ats_score ?? "—"}</span>
                     </li>
@@ -139,7 +142,12 @@ const Dashboard = () => {
               {interviews.slice(0, 8).map((i) => (
                 <li key={i.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="font-medium">{i.role}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{i.role}</p>
+                      {i.experience_level && (
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold capitalize text-primary">{i.experience_level}</span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">{new Date(i.created_at).toLocaleString()}</p>
                   </div>
                   <div className="flex items-center gap-3">

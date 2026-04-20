@@ -61,6 +61,7 @@ const Resume = () => {
         missing_keywords: r.missing_keywords,
         detected_skills: r.detected_skills,
         suggestions: r.suggestions.join("\n"),
+        experience_level: experienceLevel,
       });
 
       if (saveError) throw saveError;
