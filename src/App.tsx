@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Resume from "./pages/Resume";
 import Interview from "./pages/Interview";
 import Results from "./pages/Results";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/resume" element={<Resume />} />
           <Route path="/interview" element={<Interview />} />
           <Route path="/results/:id" element={<Results />} />
+          <Route path="/install" element={<Install />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
