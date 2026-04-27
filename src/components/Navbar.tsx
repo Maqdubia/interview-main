@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Brain, LogOut } from "lucide-react";
+import { Brain, LogOut, Smartphone } from "lucide-react";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -24,6 +24,9 @@ export const Navbar = () => {
               <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>Dashboard</Button>
               <Button variant="ghost" size="sm" onClick={() => navigate("/resume")}>Resume</Button>
               <Button variant="ghost" size="sm" onClick={() => navigate("/interview")}>Interview</Button>
+              <Button variant="ghost" size="icon" onClick={() => navigate("/install")} aria-label="Install app">
+                <Smartphone className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="icon" onClick={() => signOut()} aria-label="Sign out">
                 <LogOut className="h-4 w-4" />
               </Button>
