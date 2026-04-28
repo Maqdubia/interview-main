@@ -1,4 +1,16 @@
 /**
+ * Returns true when the app is running as an installed PWA
+ * (standalone display mode on Android/desktop or iOS Safari).
+ */
+export function isStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  const mq = window.matchMedia?.("(display-mode: standalone)").matches;
+  // iOS Safari exposes navigator.standalone
+  const ios = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+  return Boolean(mq || ios);
+}
+
+/**
  * Guarded service worker registration for PWA.
  *
  * In Lovable's preview iframe, service workers cause stale content and
