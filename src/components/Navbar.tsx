@@ -1,7 +1,8 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Brain, LogOut, Smartphone } from "lucide-react";
+import { LogOut, Smartphone } from "lucide-react";
+import appLogo from "@/assets/app-logo.jpeg";
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -13,9 +14,11 @@ export const Navbar = () => {
     <header className="hidden md:block sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary shadow-soft">
-            <Brain className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img
+            src={appLogo}
+            alt="InterviewIQ logo"
+            className="h-9 w-9 rounded-xl shadow-soft object-cover"
+          />
           <span className="font-display text-lg font-bold">InterviewIQ</span>
         </Link>
         <nav className="flex items-center gap-2">

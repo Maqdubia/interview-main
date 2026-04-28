@@ -1,7 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronLeft, Brain } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { tap } from "@/lib/haptics";
+import appLogo from "@/assets/app-logo.jpeg";
 
 const titleFor = (path: string): string => {
   if (path.startsWith("/dashboard")) return "Home";
@@ -43,9 +44,7 @@ export const MobileHeader = () => {
               <ChevronLeft className="h-5 w-5" />
             </button>
           ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-primary">
-              <Brain className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src={appLogo} alt="InterviewIQ" className="h-8 w-8 rounded-xl object-cover" />
           )}
           <h1 className="font-display text-base font-semibold truncate">{title}</h1>
         </div>

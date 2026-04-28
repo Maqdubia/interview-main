@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Apple, Smartphone, Share2, Plus, Download, CheckCircle2, Brain } from "lucide-react";
+import { Apple, Smartphone, Share2, Plus, Download, CheckCircle2 } from "lucide-react";
+import appLogo from "@/assets/app-logo.jpeg";
 
 type BIPEvent = Event & {
   prompt: () => Promise<void>;
@@ -60,9 +61,7 @@ const Install = () => {
       <Navbar />
       <main className="container max-w-2xl py-12">
         <header className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-primary shadow-soft">
-            <Brain className="h-8 w-8 text-primary-foreground" />
-          </div>
+          <img src={appLogo} alt="InterviewIQ" className="mx-auto mb-4 h-16 w-16 rounded-2xl shadow-soft object-cover" />
           <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             Install InterviewIQ
           </h1>

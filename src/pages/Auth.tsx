@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Brain } from "lucide-react";
+import appLogo from "@/assets/app-logo.jpeg";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -50,9 +50,7 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-gradient-hero px-4 py-12">
       <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-8 shadow-elegant animate-fade-in">
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-soft">
-            <Brain className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img src={appLogo} alt="InterviewIQ" className="mb-3 h-12 w-12 rounded-xl shadow-soft object-cover" />
           <h1 className="font-display text-2xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signin" ? "Sign in to continue your prep." : "Start practicing in seconds."}
