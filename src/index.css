@@ -108,4 +108,35 @@
     background-clip: text;
     color: transparent;
   }
+  .safe-pt { padding-top: env(safe-area-inset-top); }
+  .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
 }
+
+/* Mobile-app feel: kill tap highlight, prevent text-select on chrome,
+   add page transition, and give buttons/links a subtle press effect on touch. */
+@layer base {
+  html, body, #root { height: 100%; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body { overscroll-behavior-y: none; }
+  button, a, [role="button"] { -webkit-tap-highlight-color: transparent; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:active, a:active, [role="button"]:active {
+    transform: scale(0.97);
+    transition: transform 0.08s ease;
+  }
+  /* Disallow selecting UI chrome text on touch */
+  header, nav, button { user-select: none; -webkit-user-select: none; }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-page-in { animation: page-in 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+
+@media (min-width: 768px) {
+  .animate-page-in { animation: none; }
+}
+
