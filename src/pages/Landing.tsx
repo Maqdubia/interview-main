@@ -5,6 +5,7 @@ import { Mic, FileText, BarChart3, Sparkles, ShieldCheck, Brain, ArrowRight, Che
 import { useAuth } from "@/hooks/useAuth";
 import appLogo from "@/assets/app-logo.jpeg";
 import { tap } from "@/lib/haptics";
+import { EmailCapture } from "@/components/EmailCapture";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -186,6 +187,10 @@ const Landing = () => {
             <ArrowRight className="h-4 w-4" />
           </button>
 
+          <div className="mt-8">
+            <EmailCapture variant="mobile" />
+          </div>
+
           <p className="mt-4 text-center text-[11px] text-muted-foreground">
             © {new Date().getFullYear()} InterviewIQ
           </p>
@@ -262,6 +267,17 @@ const Landing = () => {
               <Button variant="hero" size="lg" onClick={go}>Try it now</Button>
             </div>
           </div>
+        </section>
+
+        {/* Email capture */}
+        <section className="container py-20">
+          <div className="mb-8 text-center">
+            <h2 className="font-display text-3xl font-bold md:text-4xl">Stay in the loop</h2>
+            <p className="mt-3 text-muted-foreground">
+              Get product updates, new features, and interview tips in your inbox.
+            </p>
+          </div>
+          <EmailCapture variant="desktop" />
         </section>
 
         <footer className="border-t border-border/60 py-8">
