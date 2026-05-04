@@ -38,9 +38,11 @@ const Resume = () => {
     if (!file.name.toLowerCase().endsWith(".pdf")) { toast.error("Please upload a PDF file"); return; }
     setWorking(true);
     setReport(null);
+    setExtractedText("");
     try {
       toast.info("Extracting text from PDF…");
       const text = await extractPdfText(file);
+      setExtractedText(text || "");
       if (!text || text.length < 50) throw new Error("Could not read enough text from this PDF");
 
       toast.info("Analyzing with AI…");
