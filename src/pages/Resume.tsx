@@ -167,6 +167,18 @@ const Resume = () => {
                   </ul>
                 </div>
 
+                <div className="rounded-2xl border border-dashed border-border/60 bg-muted/30 p-6">
+                  <h3 className="mb-3 font-display text-sm font-semibold text-muted-foreground">Debug info</h3>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <div><span className="font-medium text-foreground">Extracted text length:</span> {extractedText.length} characters</div>
+                    <div><span className="font-medium text-foreground">Keywords matched:</span> {report.matched_keywords.length} / {report.matched_keywords.length + report.missing_keywords.length}</div>
+                    <div>
+                      <div className="font-medium text-foreground">First 300 characters:</div>
+                      <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-background p-3 font-mono text-[11px]">{extractedText.slice(0, 300) || "(empty)"}</pre>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex justify-end">
                   <Button variant="hero" onClick={() => navigate("/interview")}>Practice an interview →</Button>
                 </div>
