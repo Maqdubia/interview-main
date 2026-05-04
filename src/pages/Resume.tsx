@@ -28,6 +28,7 @@ const Resume = () => {
   const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [working, setWorking] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  const [extractedText, setExtractedText] = useState<string>("");
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
@@ -37,9 +38,11 @@ const Resume = () => {
     if (!file.name.toLowerCase().endsWith(".pdf")) { toast.error("Please upload a PDF file"); return; }
     setWorking(true);
     setReport(null);
+    setExtractedText("");
     try {
       toast.info("Extracting text from PDF…");
       const text = await extractPdfText(file);
+      setExtractedText(text || "");
       if (!text || text.length < 50) throw new Error("Could not read enough text from this PDF");
 
       toast.info("Analyzing with AI…");
@@ -162,6 +165,18 @@ const Resume = () => {
                       <li key={i} className="flex gap-2 text-sm"><span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />{s}</li>
                     ))}
                   </ul>
+                </div>
+
+                <div className="rounded-2xl border border-dashed border-border/60 bg-muted/30 p-6">
+                  <h3 className="mb-3 font-display text-sm font-semibold text-muted-foreground">Debug info</h3>
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    <div><span className="font-medium text-foreground">Extracted text length:</span> {extractedText.length} characters</div>
+                    <div><span className="font-medium text-foreground">Keywords matched:</span> {report.matched_keywords.length} / {report.matched_keywords.length + report.missing_keywords.length}</div>
+                    <div>
+                      <div className="font-medium text-foreground">First 300 characters:</div>
+                      <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-background p-3 font-mono text-[11px]">{extractedText.slice(0, 300) || "(empty)"}</pre>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-end">
