@@ -1,11 +1,9 @@
 // PDF text extraction using pdfjs-dist
 import * as pdfjsLib from "pdfjs-dist";
-// Bundle the worker as a real Web Worker — this is the most reliable Vite pattern
-// and avoids dynamic import / MIME-type issues in deployed previews.
-// @ts-ignore
-import PdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
-pdfjsLib.GlobalWorkerOptions.workerPort = new PdfWorker();
+// Use CDN-hosted worker to avoid Vite bundling / dynamic import issues in deployed previews.
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 export async function extractPdfText(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
