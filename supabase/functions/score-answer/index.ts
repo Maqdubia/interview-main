@@ -1,7 +1,4 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, requireUser } from "../_shared/auth.ts";
 
 // Deterministic confidence prior from audio metrics (0-100).
 // Used to anchor the LLM and reduce variance.
