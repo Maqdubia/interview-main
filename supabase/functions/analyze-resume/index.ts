@@ -1,12 +1,12 @@
 // Resume ATS analysis via Lovable AI (structured tool call)
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, requireUser } from "../_shared/auth.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    const auth = await requireUser(req);
+    if (auth.error) return auth.error;
+
     const { resumeText, targetRole, experienceLevel } = await req.json();
     if (!resumeText || typeof resumeText !== "string") {
       return new Response(JSON.stringify({ error: "resumeText required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });

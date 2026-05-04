@@ -1,20 +1,25 @@
 // Transcribe base64 audio using Lovable AI Gemini multimodal
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders, requireUser } from "../_shared/auth.ts";
+
+const MAX_BASE64_CHARS = 7_000_000; // ~5 MB audio
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
+    const auth = await requireUser(req);
+    if (auth.error) return auth.error;
+
     const { audioBase64, mimeType } = await req.json();
-    if (!audioBase64) {
+    if (!audioBase64 || typeof audioBase64 !== "string") {
       return new Response(JSON.stringify({ error: "audioBase64 required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (audioBase64.length > MAX_BASE64_CHARS) {
+      return new Response(JSON.stringify({ error: "Audio too large. Please record a shorter clip." }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const mt = mimeType || "audio/webm";
+    const mt = typeof mimeType === "string" ? mimeType : "audio/webm";
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
