@@ -28,6 +28,7 @@ const Resume = () => {
   const [experienceLevel, setExperienceLevel] = useState<"fresher" | "mid" | "senior">("fresher");
   const [working, setWorking] = useState(false);
   const [report, setReport] = useState<Report | null>(null);
+  const [extractedText, setExtractedText] = useState<string>("");
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
