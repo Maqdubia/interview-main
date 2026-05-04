@@ -26,7 +26,13 @@ Deno.serve(async (req) => {
   try {
     const auth = await requireUser(req);
     if (auth.error) return auth.error;
-    const { role, difficulty, count, experienceLevel } = await req.json();
+    const body = await req.json();
+    const role = (body.role || "Software Engineer").toString().slice(0, 120);
+    const allowedDifficulty = ["easy", "medium", "hard"];
+    const difficultyRaw = (body.difficulty || "medium").toString().toLowerCase();
+    const difficulty = allowedDifficulty.includes(difficultyRaw) ? difficultyRaw : "medium";
+    const count = body.count;
+    const experienceLevel = (body.experienceLevel || "mid").toString().slice(0, 40);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -64,7 +70,7 @@ Deno.serve(async (req) => {
           {
             role: "user",
             content:
-              `Generate ${n} ${difficulty || "medium"}-difficulty interview questions for a ${role || "Software Engineer"} role.\n\n` +
+              `Generate ${n} ${difficulty}-difficulty interview questions for a ${role} role.\n\n` +
               `EXPERIENCE LEVEL: ${level.toUpperCase()} — ${levelText}\n\n` +
               `Variety seed (use to ensure uniqueness, do not mention): ${seed}\n` +
               `Inspiration topics (pick a diverse subset, do not list all): ${topics.join(", ")}\n` +
@@ -73,7 +79,7 @@ Deno.serve(async (req) => {
               `- Each question must be distinct in topic and angle.\n` +
               `- Calibrate depth strictly to the experience level above.\n` +
               `- Avoid clichés ("greatest weakness", "where do you see yourself in 5 years").\n` +
-              `- Make them realistic for a ${difficulty || "medium"} bar at a real company.\n\n` +
+              `- Make them realistic for a ${difficulty} bar at a real company.\n\n` +
               `Return ONLY a JSON object: {"questions": ["...","..."]}.`,
           },
         ],
