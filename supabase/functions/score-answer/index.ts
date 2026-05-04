@@ -63,7 +63,13 @@ Deno.serve(async (req) => {
   try {
     const auth = await requireUser(req);
     if (auth.error) return auth.error;
-    const { question, transcript, role, audioMetrics, experienceLevel } = await req.json();
+    const body = await req.json();
+    const question = (body.question || "").toString().slice(0, 1000);
+    const transcript = (body.transcript || "").toString().slice(0, 8000);
+    const role = (body.role || "Software Engineer").toString().slice(0, 120);
+    const experienceLevel = (body.experienceLevel || "mid").toString().slice(0, 40);
+    const audioMetrics = body.audioMetrics && typeof body.audioMetrics === "object" ? body.audioMetrics : null;
+    const audioMetricsStr = JSON.stringify(audioMetrics || {}).slice(0, 500);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
@@ -109,11 +115,11 @@ Deno.serve(async (req) => {
       },
     }];
 
-    const userPrompt = `Role: ${role || "Software Engineer"}
+    const userPrompt = `Role: ${role}
 Experience level: ${level}
 Question: ${question}
-Candidate transcript: """${(transcript || "").slice(0, 4000)}"""
-Audio metrics: ${JSON.stringify(audioMetrics || {})}
+Candidate transcript: """${transcript.slice(0, 4000)}"""
+Audio metrics: ${audioMetricsStr}
 ${priorLine}
 
 Apply the rubric strictly. First reason briefly, then emit final scores via the function call.`;
