@@ -153,19 +153,48 @@ const Interview = () => {
       if (se) throw se;
       if ((sc as any)?.error) throw new Error((sc as any).error);
 
+      const contentScore = (sc as any).content_score || 0;
+      const clarityScore = (sc as any).clarity_score || 0;
+      const confidenceScore = (sc as any).confidence_score || 0;
+      const avgScore = Math.round((contentScore + clarityScore + confidenceScore) / 3);
+
       await db.from("answers").insert({
         interview_id: interviewId,
         user_id: user.id,
         question: questions[qIndex],
         question_index: qIndex,
         transcript: finalTranscript,
-        content_score: (sc as any).content_score,
-        clarity_score: (sc as any).clarity_score,
-        confidence_score: (sc as any).confidence_score,
+        content_score: contentScore,
+        clarity_score: clarityScore,
+        confidence_score: confidenceScore,
         feedback: (sc as any).feedback,
       });
 
-      // Advance
+      priorQARef.current.push({ question: questions[qIndex], transcript: finalTranscript, avgScore });
+
+      // Adaptive follow-up: weak answer (<60) triggers a probing question in the next slot.
+      const isLast = qIndex + 1 >= questions.length;
+      const alreadyFollowedUp = followUpInsertedRef.current.has(qIndex);
+      if (avgScore < 60 && !isLast && !alreadyFollowedUp) {
+        try {
+          toast.info("Generating an adaptive follow-up…");
+          const { data: fu } = await supabase.functions.invoke("generate-questions", {
+            body: {
+              role, difficulty, experienceLevel, mode: "followup",
+              resumeContext: resumeContextPayload,
+              previousQA: priorQARef.current.slice(-2),
+            },
+          });
+          const fq: string[] = (fu as any)?.questions || [];
+          if (fq[0]) {
+            const next = [...questions];
+            next.splice(qIndex + 1, 0, fq[0]);
+            setQuestions(next);
+            followUpInsertedRef.current.add(qIndex);
+          }
+        } catch { /* non-fatal */ }
+      }
+
       if (qIndex + 1 >= questions.length) {
         await finalizeInterview();
       } else {
