@@ -35,10 +35,33 @@ const Interview = () => {
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
+  // Resume linkage — bias questions to the candidate's actual resume when available.
+  const [resumeCtx, setResumeCtx] = useState<any | null>(null);
+  const [useResume, setUseResume] = useState(true);
+
+  // Track prior Q&A for adaptive follow-ups.
+  const priorQARef = useRef<Array<{ question: string; transcript: string; avgScore: number }>>([]);
+  const followUpInsertedRef = useRef<Set<number>>(new Set());
+
   useEffect(() => () => { mediaRef.current?.stream?.getTracks().forEach((t) => t.stop()); }, []);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>;
-  if (!user) return <Navigate to="/auth" replace />;
+  // Load most recent resume for this user, prefill role + skills for adaptive questioning.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await db.from("resumes")
+        .select("file_name, experience_level, detected_skills, missing_keywords, ats_score, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setResumeCtx(data);
+        if (data.experience_level) setExperienceLevel(data.experience_level as any);
+      }
+    })();
+  }, [user]);
+
 
   const startInterview = async () => {
     setGenerating(true);
