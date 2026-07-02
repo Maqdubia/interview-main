@@ -33,10 +33,30 @@ Deno.serve(async (req) => {
     const difficulty = allowedDifficulty.includes(difficultyRaw) ? difficultyRaw : "medium";
     const count = body.count;
     const experienceLevel = (body.experienceLevel || "mid").toString().slice(0, 40);
+    const mode = body.mode === "followup" ? "followup" : "initial";
+
+    // Optional resume context to bias questions toward candidate's actual skills / gaps.
+    const resumeCtx = body.resumeContext && typeof body.resumeContext === "object" ? body.resumeContext : null;
+    const detectedSkills: string[] = Array.isArray(resumeCtx?.detected_skills)
+      ? resumeCtx.detected_skills.slice(0, 15).map((s: any) => String(s).slice(0, 40))
+      : [];
+    const missingKeywords: string[] = Array.isArray(resumeCtx?.missing_keywords)
+      ? resumeCtx.missing_keywords.slice(0, 15).map((s: any) => String(s).slice(0, 40))
+      : [];
+
+    // Optional prior Q&A history for adaptive follow-ups.
+    const priorQA: Array<{ question: string; transcript: string; avgScore?: number }> = Array.isArray(body.previousQA)
+      ? body.previousQA.slice(-3).map((qa: any) => ({
+          question: String(qa?.question || "").slice(0, 400),
+          transcript: String(qa?.transcript || "").slice(0, 800),
+          avgScore: Number.isFinite(Number(qa?.avgScore)) ? Number(qa.avgScore) : undefined,
+        }))
+      : [];
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const n = Math.min(Math.max(Number(count) || 5, 3), 8);
+    const n = mode === "followup" ? 1 : Math.min(Math.max(Number(count) || 5, 3), 8);
     const seed = crypto.randomUUID();
     const topics = pickRandom(TOPIC_POOL, Math.min(n + 2, TOPIC_POOL.length));
     const styles = ["behavioral", "technical deep-dive", "scenario-based", "trade-off / design", "past-experience"];
@@ -53,12 +73,32 @@ Deno.serve(async (req) => {
     };
     const levelText = levelGuidance[level] || levelGuidance.mid;
 
+    const resumeBlock = detectedSkills.length || missingKeywords.length
+      ? `\nCANDIDATE RESUME CONTEXT (use to bias questions toward what they actually claim, and probe gaps):\n` +
+        `- Detected skills: ${detectedSkills.join(", ") || "(none)"}\n` +
+        `- Gaps / missing keywords for this role: ${missingKeywords.join(", ") || "(none)"}\n` +
+        `Pick a mix: some questions on strong skills (to verify depth), some on gaps (to probe honestly).\n`
+      : "";
+
+    const priorBlock = priorQA.length
+      ? `\nPRIOR Q&A IN THIS INTERVIEW (do NOT repeat, build on weak areas):\n` +
+        priorQA.map((qa, i) =>
+          `Q${i + 1}: ${qa.question}\nA${i + 1} (score ${qa.avgScore ?? "?"}): ${qa.transcript.slice(0, 300)}`
+        ).join("\n\n") + "\n"
+      : "";
+
+    const modeInstruction = mode === "followup"
+      ? `Generate exactly 1 SHARP FOLLOW-UP question that probes deeper on the weakest area from the prior Q&A above. ` +
+        `If the last answer was vague, ask for a concrete example with metrics. If it was surface-level, ask for a trade-off or edge case. ` +
+        `Do NOT repeat the prior question. Keep it 1-2 sentences.`
+      : `Generate ${n} ${difficulty}-difficulty interview questions for a ${role} role.`;
+
     const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        temperature: 1.1,
+        temperature: mode === "followup" ? 0.7 : 1.1,
         messages: [
           {
             role: "system",
@@ -70,9 +110,11 @@ Deno.serve(async (req) => {
           {
             role: "user",
             content:
-              `Generate ${n} ${difficulty}-difficulty interview questions for a ${role} role.\n\n` +
-              `EXPERIENCE LEVEL: ${level.toUpperCase()} — ${levelText}\n\n` +
-              `Variety seed (use to ensure uniqueness, do not mention): ${seed}\n` +
+              `${modeInstruction}\n\n` +
+              `EXPERIENCE LEVEL: ${level.toUpperCase()} — ${levelText}\n` +
+              resumeBlock +
+              priorBlock +
+              `\nVariety seed (use to ensure uniqueness, do not mention): ${seed}\n` +
               `Inspiration topics (pick a diverse subset, do not list all): ${topics.join(", ")}\n` +
               `Preferred question styles to mix: ${styleHint}.\n\n` +
               `Constraints:\n` +
