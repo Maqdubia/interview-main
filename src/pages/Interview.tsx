@@ -35,16 +35,51 @@ const Interview = () => {
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
 
+  // Resume linkage — bias questions to the candidate's actual resume when available.
+  const [resumeCtx, setResumeCtx] = useState<any | null>(null);
+  const [useResume, setUseResume] = useState(true);
+
+  // Track prior Q&A for adaptive follow-ups.
+  const priorQARef = useRef<Array<{ question: string; transcript: string; avgScore: number }>>([]);
+  const followUpInsertedRef = useRef<Set<number>>(new Set());
+
   useEffect(() => () => { mediaRef.current?.stream?.getTracks().forEach((t) => t.stop()); }, []);
+
+  // Load most recent resume for this user, prefill role + skills for adaptive questioning.
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await db.from("resumes")
+        .select("file_name, experience_level, detected_skills, missing_keywords, ats_score, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setResumeCtx(data);
+        if (data.experience_level) setExperienceLevel(data.experience_level as any);
+      }
+    })();
+  }, [user]);
 
   if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>;
   if (!user) return <Navigate to="/auth" replace />;
 
+  const resumeContextPayload = useResume && resumeCtx ? {
+    detected_skills: resumeCtx.detected_skills || [],
+    missing_keywords: resumeCtx.missing_keywords || [],
+  } : null;
+
   const startInterview = async () => {
     setGenerating(true);
+    priorQARef.current = [];
+    followUpInsertedRef.current = new Set();
     try {
       const { data, error } = await supabase.functions.invoke("generate-questions", {
-        body: { role, difficulty, count: 5, experienceLevel },
+        body: {
+          role, difficulty, count: 5, experienceLevel,
+          resumeContext: resumeContextPayload,
+        },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -62,6 +97,7 @@ const Interview = () => {
       setGenerating(false);
     }
   };
+
 
   const startRecording = async () => {
     try {
@@ -117,19 +153,48 @@ const Interview = () => {
       if (se) throw se;
       if ((sc as any)?.error) throw new Error((sc as any).error);
 
+      const contentScore = (sc as any).content_score || 0;
+      const clarityScore = (sc as any).clarity_score || 0;
+      const confidenceScore = (sc as any).confidence_score || 0;
+      const avgScore = Math.round((contentScore + clarityScore + confidenceScore) / 3);
+
       await db.from("answers").insert({
         interview_id: interviewId,
         user_id: user.id,
         question: questions[qIndex],
         question_index: qIndex,
         transcript: finalTranscript,
-        content_score: (sc as any).content_score,
-        clarity_score: (sc as any).clarity_score,
-        confidence_score: (sc as any).confidence_score,
+        content_score: contentScore,
+        clarity_score: clarityScore,
+        confidence_score: confidenceScore,
         feedback: (sc as any).feedback,
       });
 
-      // Advance
+      priorQARef.current.push({ question: questions[qIndex], transcript: finalTranscript, avgScore });
+
+      // Adaptive follow-up: weak answer (<60) triggers a probing question in the next slot.
+      const isLast = qIndex + 1 >= questions.length;
+      const alreadyFollowedUp = followUpInsertedRef.current.has(qIndex);
+      if (avgScore < 60 && !isLast && !alreadyFollowedUp) {
+        try {
+          toast.info("Generating an adaptive follow-up…");
+          const { data: fu } = await supabase.functions.invoke("generate-questions", {
+            body: {
+              role, difficulty, experienceLevel, mode: "followup",
+              resumeContext: resumeContextPayload,
+              previousQA: priorQARef.current.slice(-2),
+            },
+          });
+          const fq: string[] = (fu as any)?.questions || [];
+          if (fq[0]) {
+            const next = [...questions];
+            next.splice(qIndex + 1, 0, fq[0]);
+            setQuestions(next);
+            followUpInsertedRef.current.add(qIndex);
+          }
+        } catch { /* non-fatal */ }
+      }
+
       if (qIndex + 1 >= questions.length) {
         await finalizeInterview();
       } else {
@@ -179,6 +244,25 @@ const Interview = () => {
             <p className="mt-1 text-muted-foreground">5 AI-generated questions tailored to your role.</p>
 
             <div className="mt-6 space-y-4">
+              {resumeCtx && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium text-foreground">Using your latest resume</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {resumeCtx.file_name} · questions will target your skills{Array.isArray(resumeCtx.missing_keywords) && resumeCtx.missing_keywords.length ? " and probe gaps" : ""}.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUseResume((v) => !v)}
+                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs hover:bg-accent"
+                    >
+                      {useResume ? "Disable" : "Enable"}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="role">Target role</Label>
                 <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} />

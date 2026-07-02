@@ -124,33 +124,21 @@ ${priorLine}
 
 Apply the rubric strictly. First reason briefly, then emit final scores via the function call.`;
 
-    const basePayload = {
-      model: "google/gemini-2.5-pro",
+    const makePayload = (model: string) => ({
+      model,
       messages: [
         { role: "system", content: `You are a senior interview coach and rigorous grader. ${expectation}\n\n${RUBRIC}` },
         { role: "user", content: userPrompt },
       ],
       tools,
       tool_choice: { type: "function", function: { name: "score_answer" } },
-    };
-
-    // Self-consistency: two passes, average the numeric scores, keep richest text from pass 1.
-    const [r1, r2] = await Promise.all([
-      callModel(basePayload, LOVABLE_API_KEY),
-      callModel(basePayload, LOVABLE_API_KEY),
-    ]);
+    });
 
     const handleErr = (r: Response) => {
       if (r.status === 429) return new Response(JSON.stringify({ error: "Rate limited, please retry." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (r.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       return null;
     };
-
-    if (!r1.ok) {
-      const e = handleErr(r1); if (e) return e;
-      console.error("score r1 error", r1.status, await r1.text());
-      return new Response(JSON.stringify({ error: "AI error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
 
     const parseArgs = async (r: Response) => {
       try {
@@ -159,8 +147,27 @@ Apply the rubric strictly. First reason briefly, then emit final scores via the 
       } catch { return {}; }
     };
 
+    // Pass 1: strong grader.
+    const r1 = await callModel(makePayload("google/gemini-2.5-pro"), LOVABLE_API_KEY);
+    if (!r1.ok) {
+      const e = handleErr(r1); if (e) return e;
+      console.error("score r1 error", r1.status, await r1.text());
+      return new Response(JSON.stringify({ error: "AI error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const a1 = await parseArgs(r1);
-    const a2 = r2.ok ? await parseArgs(r2) : {};
+
+    // Conditional self-consistency: only run a cheaper 2nd pass when pass 1 lands in extreme
+    // ranges (<45 or >85) where a second opinion is worth the cost. Uses flash to cut spend.
+    const extreme = (n: any) => {
+      const v = Number(n);
+      return Number.isFinite(v) && (v < 45 || v > 85);
+    };
+    const needsSecondPass = extreme(a1.content_score) || extreme(a1.clarity_score) || extreme(a1.confidence_score);
+    let a2: any = {};
+    if (needsSecondPass) {
+      const r2 = await callModel(makePayload("google/gemini-2.5-flash"), LOVABLE_API_KEY);
+      if (r2.ok) a2 = await parseArgs(r2);
+    }
 
     const avg = (x: any, y: any) => {
       const xn = Number(x); const yn = Number(y);
