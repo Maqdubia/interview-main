@@ -62,12 +62,24 @@ const Interview = () => {
     })();
   }, [user]);
 
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-background"><p className="text-muted-foreground">Loading…</p></div>;
+  if (!user) return <Navigate to="/auth" replace />;
+
+  const resumeContextPayload = useResume && resumeCtx ? {
+    detected_skills: resumeCtx.detected_skills || [],
+    missing_keywords: resumeCtx.missing_keywords || [],
+  } : null;
 
   const startInterview = async () => {
     setGenerating(true);
+    priorQARef.current = [];
+    followUpInsertedRef.current = new Set();
     try {
       const { data, error } = await supabase.functions.invoke("generate-questions", {
-        body: { role, difficulty, count: 5, experienceLevel },
+        body: {
+          role, difficulty, count: 5, experienceLevel,
+          resumeContext: resumeContextPayload,
+        },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
@@ -85,6 +97,7 @@ const Interview = () => {
       setGenerating(false);
     }
   };
+
 
   const startRecording = async () => {
     try {
