@@ -244,6 +244,25 @@ const Interview = () => {
             <p className="mt-1 text-muted-foreground">5 AI-generated questions tailored to your role.</p>
 
             <div className="mt-6 space-y-4">
+              {resumeCtx && (
+                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium text-foreground">Using your latest resume</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {resumeCtx.file_name} · questions will target your skills{Array.isArray(resumeCtx.missing_keywords) && resumeCtx.missing_keywords.length ? " and probe gaps" : ""}.
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUseResume((v) => !v)}
+                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs hover:bg-accent"
+                    >
+                      {useResume ? "Disable" : "Enable"}
+                    </button>
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="role">Target role</Label>
                 <Input id="role" value={role} onChange={(e) => setRole(e.target.value)} />
