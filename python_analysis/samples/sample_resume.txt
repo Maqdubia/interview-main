@@ -1,0 +1,21 @@
+Priya Sharma
+priya.sharma@example.com | github.com/priyasharma
+
+Summary
+Final-year B.Tech Computer Science student interested in software engineering.
+
+Education
+B.Tech in Computer Science, 2022-2026, CGPA 8.4
+
+Skills
+Python, Java, JavaScript, React, SQL, Git, HTML, CSS, Data Structures and Algorithms
+
+Projects
+InterviewIQ - Built an AI interview practice web app using React and a REST API. Improved answer feedback time by 40%.
+Expense Tracker - Developed a Python and SQL app used by 50+ classmates.
+
+Experience
+Web Development Internship, ABC Tech (2 months) - Implemented 5 responsive pages and fixed 20+ bugs.
+
+Certifications
+Python for Everybody (Coursera). Participated in Smart India Hackathon 2025.
