@@ -1,0 +1,1 @@
+We are hiring a Software Engineer (Fresher). Required: strong Python or Java, data structures and algorithms, SQL databases, Git, and REST API basics. Nice to have: React, JavaScript, testing, and internship or project experience.
