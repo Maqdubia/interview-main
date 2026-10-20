@@ -51,6 +51,7 @@ export const MobileHeader = () => {
           )}
           <h1 className="font-display text-base font-semibold truncate">{title}</h1>
         </div>
+        <CartDrawer />
       </div>
     </header>
   );
