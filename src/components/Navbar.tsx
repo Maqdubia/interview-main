@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Smartphone } from "lucide-react";
+import { CartDrawer } from "@/components/CartDrawer";
 import appLogo from "@/assets/app-logo.jpeg";
 
 export const Navbar = () => {
@@ -22,6 +23,7 @@ export const Navbar = () => {
           <span className="font-display text-lg font-bold">InterviewIQ</span>
         </Link>
         <nav className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/shop")}>Shop</Button>
           {user ? (
             <>
               <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard")}>Dashboard</Button>
@@ -40,6 +42,7 @@ export const Navbar = () => {
               <Button variant="hero" size="sm" onClick={() => navigate("/auth")}>Get started</Button>
             </>
           )}
+          <CartDrawer />
         </nav>
       </div>
     </header>
