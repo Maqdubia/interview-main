@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { tap } from "@/lib/haptics";
+import { CartDrawer } from "@/components/CartDrawer";
 import appLogo from "@/assets/app-logo.jpeg";
 
 const titleFor = (path: string): string => {
@@ -9,11 +10,13 @@ const titleFor = (path: string): string => {
   if (path.startsWith("/resume")) return "Resume";
   if (path.startsWith("/interview")) return "Interview";
   if (path.startsWith("/results")) return "Results";
+  if (path.startsWith("/shop")) return "Shop";
+  if (path.startsWith("/product")) return "Product";
   if (path.startsWith("/install")) return "Profile";
   return "InterviewIQ";
 };
 
-const ROOT_ROUTES = new Set(["/dashboard", "/resume", "/interview", "/results", "/install"]);
+const ROOT_ROUTES = new Set(["/dashboard", "/resume", "/interview", "/results", "/install", "/shop"]);
 
 export const MobileHeader = () => {
   const { user } = useAuth();
