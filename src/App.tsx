@@ -42,7 +42,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppShell>
-        </BrowserRouter>
+        </BrowserRouter>BrowserRouter basename={import.meta.env.BASE_URL}>
       </TooltipProvider>
     </QueryClientProvider>
   );
